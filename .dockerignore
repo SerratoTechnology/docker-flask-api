@@ -1,0 +1,37 @@
+# Excludes files from the build context: the package Docker sends
+# before it runs the Dockerfile. Anything listed here cannot be copied,
+# even when the Dockerfile uses "COPY . .".
+# .gitignore does not apply to Docker. This file is separate.
+
+# Git history. The image does not need it, and it grows over time.
+.git
+.gitignore
+
+# Virtual environments from the host. Dependencies are installed inside the image.
+.venv
+venv
+
+# Python and tool caches. They change often and are not source code.
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Local secrets. They must not end up in an image layer.
+.env
+.env.*
+
+# Editor and system files. They are unrelated to the app.
+.DS_Store
+.idea
+.vscode
+
+# Tests and docs. They belong in the repo, not in the container that runs the API.
+tests
+*.md
+
+# The Dockerfile is not executed from inside the image.
+Dockerfile
+.dockerignore
