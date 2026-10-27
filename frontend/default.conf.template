@@ -1,0 +1,16 @@
+server {
+    listen 80;
+
+    # Serve the page. A request for / reads index.html from this directory.
+    location / {
+        root /usr/share/nginx/html;
+        try_files $uri /index.html;
+    }
+
+    # The browser calls /api on this container. Forward that path unchanged.
+    # BACKEND_UPSTREAM is set at startup: backend:5001 in Compose,
+    # localhost:5001 when both containers share a Fargate task network.
+    location /api/ {
+        proxy_pass http://${BACKEND_UPSTREAM};
+    }
+}

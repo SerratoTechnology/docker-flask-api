@@ -3,11 +3,11 @@
 # can pick up a different version than the one used today.
 FROM nginx:latest
 
-# Replace only the site config. The image already includes every file in
-# /etc/nginx/conf.d/ from its main nginx.conf, which stays untouched.
-# default.conf is a server block: it serves index.html and proxies /api
-# to the backend container at http://backend:5001.
-COPY default.conf /etc/nginx/conf.d/default.conf
+# Site template. The nginx image runs envsubst on /etc/nginx/templates
+# at startup and writes /etc/nginx/conf.d/default.conf.
+# BACKEND_UPSTREAM selects where /api is proxied, so the same image
+# works in Compose (backend:5001) and in one Fargate task (localhost:5001).
+COPY default.conf.template /etc/nginx/templates/default.conf.template
 
 # Copy the page nginx will serve.
 # The default document root in the nginx image is /usr/share/nginx/html,
