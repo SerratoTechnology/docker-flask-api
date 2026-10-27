@@ -48,7 +48,7 @@ Stop it with `Ctrl+C`. Containers started in the background (`docker compose up 
 docker compose down
 ```
 
-## How the pieces connect
+## Architecture
 
 Compose puts both services on a network named `api`. On that network the Frontend reaches the Backend by the name `backend`. Your machine is not on that network. It only has the published port `8081`, which Compose maps to port `80` in the Frontend.
 
