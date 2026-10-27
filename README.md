@@ -50,7 +50,24 @@ docker compose down
 
 ## How the pieces connect
 
-`frontend` and `backend` join the `api` network. Only the Frontend is published (`8081:80`). Nginx keeps `/` for `index.html` and sends `/api/` to `http://backend:5001` without rewriting the path.
+Compose puts both services on a network named `api`. On that network the Frontend reaches the Backend by the name `backend`. Your machine is not on that network. It only has the published port `8081`, which Compose maps to port `80` in the Frontend.
+
+```mermaid
+flowchart LR
+  browser["Browser on your machine"]
+  port["localhost:8081"]
+
+  subgraph apiNet["api network"]
+    frontend["Frontend · Nginx :80"]
+    backend["Backend · Flask :5001"]
+  end
+
+  browser -->|"opens the page"| port
+  port --> frontend
+  frontend -->|"/api → backend:5001"| backend
+```
+
+`/` is the page. `/api/` is proxied to `http://backend:5001` with the path unchanged, so `/api/v1/hello` is still `/api/v1/hello` when it arrives. Port `5001` is not published, so the browser cannot call the Backend directly.
 
 `depends_on` starts the Backend before the Frontend. It does not wait until Flask is ready to accept requests.
 
