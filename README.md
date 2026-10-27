@@ -71,6 +71,19 @@ flowchart LR
 
 `depends_on` starts the Backend before the Frontend. It does not wait until Flask is ready to accept requests.
 
+## Nginx upstream configuration from the environment
+
+The Frontend image does not hardcode where the API lives. `default.conf.template` is copied to `/etc/nginx/templates/`. When the container starts, the Nginx image substitutes environment variables and writes a normal `default.conf`.
+
+`BACKEND_UPSTREAM` is that address:
+
+| Where it runs | `BACKEND_UPSTREAM` | Why |
+| --- | --- | --- |
+| Docker Compose | `backend:5001` | The service name exists on the `api` network. `localhost` inside the Frontend is Nginx itself. |
+| One ECS Fargate task | `localhost:5001` | Both containers share the task network. The Compose hostname `backend` does not exist there. |
+
+Compose sets the local value in `docker-compose.yml`. A Fargate task definition sets the other one. The image you push to a registry stays the same. Changing the template to a fixed host would make one of the two environments fail.
+
 ## License
 
 [Apache License 2.0](LICENSE). Copyright 2026 Michael Serrato.
