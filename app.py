@@ -1,6 +1,10 @@
-from flask import Flask, Blueprint, jsonify
+from flask import Flask, Blueprint, jsonify, send_from_directory
 
 app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return send_from_directory(app.static_folder, 'index.html')
 
 # API v1
 api_v1 = Blueprint('api_v1', __name__, url_prefix='/api/v1')

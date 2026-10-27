@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>docker-flask-api</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --text: #1f2933;
+      --muted: #5f6b7a;
+      --line: #e4e7eb;
+      --accent: #0f6e6b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 20px 64px;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--accent);
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 8px 0 28px;
+      font-size: 1.8rem;
+      font-weight: 650;
+    }
+
+    .endpoint {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 18px 14px;
+      margin-bottom: 12px;
+    }
+
+    .path {
+      margin: 0 0 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.92rem;
+    }
+
+    .method {
+      color: var(--accent);
+      margin-right: 8px;
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      border-radius: 8px;
+      background: #f8faf9;
+      color: var(--text);
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+
+    .error { color: #9b1c1c; }
+
+    .bone {
+      height: 14px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #e6ebea 25%, #f7f8f8 37%, #e6ebea 63%);
+      background-size: 400% 100%;
+      animation: shimmer 1.4s ease infinite;
+    }
+
+    .bone.title { width: 46%; height: 16px; margin-bottom: 14px; }
+    .bone.short { width: 62%; margin-bottom: 0; }
+
+    @keyframes shimmer {
+      0% { background-position: 100% 0; }
+      100% { background-position: 0 0; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p>docker-flask-api</p>
+      <h1>API responses</h1>
+    </header>
+    <section id="endpoints" aria-busy="true" aria-live="polite"></section>
+  </main>
+  <script>
+    const endpoints = ["/api/v1/hello", "/api/v1/info", "/api/v2/hello"];
+    const root = document.querySelector("#endpoints");
+    const LOAD_DELAY_MS = 5000;
+
+    function skeletonCard() {
+      const card = document.createElement("article");
+      card.className = "endpoint";
+      card.setAttribute("aria-hidden", "true");
+      card.innerHTML = `
+        <div class="bone title"></div>
+        <div class="bone"></div>
+        <div class="bone"></div>
+        <div class="bone short"></div>
+      `;
+      return card;
+    }
+
+    function responseCard(path, text, ok) {
+      const card = document.createElement("article");
+      card.className = "endpoint";
+      const pathLine = document.createElement("p");
+      pathLine.className = "path";
+      pathLine.innerHTML = `<span class="method">GET</span>${path}`;
+      const output = document.createElement("pre");
+      output.textContent = text;
+      if (!ok) output.classList.add("error");
+      card.append(pathLine, output);
+      return card;
+    }
+
+    function wait(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    root.replaceChildren(...endpoints.map(skeletonCard));
+
+    async function load(path) {
+      try {
+        const response = await fetch(path);
+        const body = await response.json();
+        return { path, ok: response.ok, text: JSON.stringify(body, null, 2) };
+      } catch (error) {
+        return { path, ok: false, text: error.message };
+      }
+    }
+
+    Promise.all([Promise.all(endpoints.map(load)), wait(LOAD_DELAY_MS)]).then(([results]) => {
+      root.setAttribute("aria-busy", "false");
+      root.replaceChildren(...results.map((result) => responseCard(result.path, result.text, result.ok)));
+    });
+  </script>
+</body>
+</html>
